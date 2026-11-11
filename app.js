@@ -213,7 +213,7 @@
     const c = document.getElementById("tabCourse");
     const a = document.getElementById("tabAnswers");
     if (c) c.addEventListener("click", renderHome);
-    if (a) a.addEventListener("click", () => { ansQuery = ""; ansFilter = "all"; renderAnswers(); });
+    if (a) a.addEventListener("click", () => { ansQuery = ""; ansFilter = "all"; ansSection = "all"; renderAnswers(); });
     const s = document.getElementById("soundBtn");
     if (s) s.addEventListener("click", () => { store.sound = !store.sound; saveStore(); rerender(); });
   }
@@ -335,6 +335,7 @@
 
   /* ================= ВКЛАДКА «ОТВЕТЫ» ================= */
   let ansFilter = "all";
+  let ansSection = "all";
   let ansQuery = "";
 
   function renderAnswers() {
@@ -360,6 +361,14 @@
               <input id="ansSearch" class="ans-search" type="search" placeholder="Поиск по вопросу и ответу" value="${esc(ansQuery)}">
             </div>
           </div>
+
+          <div class="ans-sections">
+            <button class="sec-chip ${ansSection === "all" ? "active" : ""}" data-s="all">Все пункты</button>
+            ${["1.1", "1.2", "1.3", "1.4"].map(s =>
+              `<button class="sec-chip ${ansSection === s ? "active" : ""}" data-s="${s}">${s} · ${SECTION_META[s].title}</button>`
+            ).join("")}
+          </div>
+
           <div class="ans-count" id="ansCount"></div>
         </div>
 
@@ -368,6 +377,10 @@
 
     document.querySelectorAll(".seg-btn").forEach(b => b.addEventListener("click", () => {
       ansFilter = b.dataset.f;
+      renderAnswers();
+    }));
+    document.querySelectorAll(".sec-chip").forEach(b => b.addEventListener("click", () => {
+      ansSection = b.dataset.s;
       renderAnswers();
     }));
     const inp = document.getElementById("ansSearch");
@@ -405,6 +418,7 @@
     [["v1", V1, "Вариант 1"], ["v2", V2, "Вариант 2"]].forEach(([key, course, label]) => {
       if (ansFilter !== "all" && ansFilter !== key) return;
       ["1.1", "1.2", "1.3", "1.4"].forEach(sec => {
+        if (ansSection !== "all" && ansSection !== sec) return;
         const tasks = course.tasks.filter(t =>
           t.section === sec &&
           (!q || JSON.stringify(t).toLowerCase().replace(/ё/g, "е").includes(q))
